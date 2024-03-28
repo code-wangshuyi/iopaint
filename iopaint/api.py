@@ -254,8 +254,10 @@ class Api:
     def api_inpaint(self, req: InpaintRequest):
         image, alpha_channel, infos = decode_base64_to_image(req.image)
         mask, _, _ = decode_base64_to_image(req.mask, gray=True)
-
+        # cv2.imwrite('test_image/input.png',image)
         mask = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY)[1]
+        # cv2.imwrite('test_image/mask.png',mask)
+
         if image.shape[:2] != mask.shape[:2]:
             raise HTTPException(
                 400,
@@ -274,7 +276,7 @@ class Api:
 
         rgb_np_img = cv2.cvtColor(rgb_np_img.astype(np.uint8), cv2.COLOR_BGR2RGB)
         rgb_res = concat_alpha_channel(rgb_np_img, alpha_channel)
-
+        # cv2.imwrite('test_image/output.png',rgb_res)
         ext = "png"
         res_img_bytes = pil_to_bytes(
             Image.fromarray(rgb_res),
@@ -384,6 +386,16 @@ class Api:
         )
 
     def _build_model_manager(self):
+
+        print("Model Name:", self.config.model)
+        print("Device:", self.config.device)
+        print("No Half:", self.config.no_half)
+        print("Low Memory:", self.config.low_mem)
+        print("Disable NSFW Checker:", self.config.disable_nsfw_checker)
+        print("CPU Text Encoder:", self.config.cpu_textencoder)
+        print("Local Files Only:", self.config.local_files_only)
+        print("CPU Offload:", self.config.cpu_offload)
+
         return ModelManager(
             name=self.config.model,
             device=torch.device(self.config.device),
